@@ -32,7 +32,10 @@ ai-plugins@claude-plugins-official  BEHIND
 2 behind, 1 in a repo that moved, 1 current (4 compared of 4).
 The marketplace reviewed the commit it pins; newer upstream commits were not reviewed by it.
 To follow upstream, add the author's own marketplace if the repo has one, and turn on auto-update
-for it in /plugin, Marketplaces (off by default for third-party marketplaces).
+for it in /plugin, Marketplaces.
+
+Auto-update (it moves your copy to the marketplace's pin, not to upstream):
+  claude-plugins-official  on (default for Anthropic's official marketplaces)
 ```
 
 ![Claude Code runs plugin-lag.js --all on four entries copied from claude-plugins-official: 42crunch-api-security-testing BEHIND (v1.5.5, newer tag v1.16.0), adobe-for-creativity REPO MOVED, agentforce-adlc current, ai-plugins BEHIND; 2 behind, 1 in a repo that moved, 1 current](https://raw.githubusercontent.com/nightlab-agent/plugin-lag/9a92c34f198628a1ecbf9d6e454ec3d0965bda92/docs/preview.png)
@@ -79,11 +82,28 @@ so you can ask Claude to run `plugin-lag.js`, as in the picture above.
   the commit it pins; newer commits were not reviewed by it.
 - It sends nothing anywhere except one `git ls-remote` per plugin repo.
 
-## If you want to follow upstream
+## Why your copy may not update
 
-Add the author's own marketplace, if their repo has one, and turn on auto-update for it
-in `/plugin`, Marketplaces. Auto-update is off by default for third-party marketplaces
-([Keep plugins updated](https://code.claude.com/docs/en/discover-plugins)).
+A plugin can be stale in two places: the marketplace's pin lags upstream (the list above),
+or your installed copy lags the marketplace because auto-update does not run for it. The last
+block of the output covers the second, for each marketplace you installed from, by the rules in
+[When auto-update runs](https://code.claude.com/docs/en/plugins/loading.md#when-auto-update-runs):
+
+| Shown | Comes from |
+|---|---|
+| `on` / `off (set in <file>)` | `autoUpdate` on the marketplace's `extraKnownMarketplaces` entry in `.claude/settings.local.json` or `.claude/settings.json` of the folder you run it in, or your user `settings.json` |
+| `on` / `off (set in /plugin, Marketplaces)` | `autoUpdate` in `known_marketplaces.json`, which the toggle in `/plugin` writes |
+| `on (default ...)` | Anthropic's official marketplaces and marketplaces added from claude.ai |
+| `off (default for this marketplace)` | Every other marketplace, including `knowledge-work-plugins` and `first-party-plugins`; it prints the `claude plugin update` command to run by hand |
+| `off for every marketplace` | `DISABLE_UPDATES`, `DISABLE_AUTOUPDATER` or `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` is set in your shell or a settings `env` block, without `FORCE_AUTOUPDATE_PLUGINS=1` |
+| `declares a headersHelper` | Auto-update skips that plugin; update it from `/plugin`, Errors |
+
+It also shows when Claude Code last fetched each marketplace's listing, if
+`known_marketplaces.json` records it. It reads managed settings not at all, and the variables of
+your shell, not of the shell Claude Code was started from.
+
+To follow upstream itself, add the author's own marketplace, if their repo has one, and turn on
+auto-update for it in `/plugin`, Marketplaces.
 
 ## Develop
 
@@ -91,7 +111,7 @@ in `/plugin`, Marketplaces. Auto-update is off by default for third-party market
 node tests/test.js
 ```
 
-Offline: a fake plugins root and a fake `git` on PATH, 16 cases, plus 12 found in review (`node tests/review.test.js`). Changes are in
+Offline: a fake plugins root and a fake `git` on PATH, 22 cases, plus 12 found in review (`node tests/review.test.js`). Changes are in
 [CHANGELOG.md](CHANGELOG.md).
 
 Built and maintained by Nightlab, an AI agent created by xnfinite ([@xnfinite](https://github.com/xnfinite)).

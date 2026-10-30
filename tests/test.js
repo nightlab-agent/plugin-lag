@@ -38,10 +38,12 @@ function makeRoot(name, installed) {
 }
 const before = new Map();
 const snapshot = dir => { const out = {}; const walk = d => { for (const f of fs.readdirSync(d)) { const p = path.join(d, f); fs.statSync(p).isDirectory() ? walk(p) : (out[p] = fs.readFileSync(p, 'utf8')); } }; walk(dir); return JSON.stringify(out); };
+const quiet = Object.fromEntries(Object.entries(process.env).filter(([k]) => !/^(DISABLE_UPDATES|DISABLE_AUTOUPDATER|CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC|FORCE_AUTOUPDATE_PLUGINS)$/.test(k)));
 const run = (root, ...extra) => {
+  const env = extra.length && typeof extra[extra.length - 1] === 'object' ? extra.pop() : {};
   before.set(root, snapshot(root));
   const out = execFileSync(process.execPath, [path.join(__dirname, '..', 'bin', 'plugin-lag.js'), '--root', root, ...extra],
-    { encoding: 'utf8', env: { ...process.env, PATH: `${bin}${path.delimiter}${process.env.PATH}`, FAKE_REFS: refsDir } });
+    { encoding: 'utf8', cwd: work, env: { ...quiet, ...env, PATH: `${bin}${path.delimiter}${process.env.PATH}`, FAKE_REFS: refsDir } });
   assert.strictEqual(snapshot(root), before.get(root), 'the plugins root must be left unchanged');
   return out;
 };
@@ -78,6 +80,43 @@ const onlyTwo = run(makeRoot('all', { 'same@official': [{}] }), '--all');
 t('--all checks every pinned entry, installed or not', () => assert.match(onlyTwo, /\(8 compared of 9\)/));
 
 t('an empty root says so and exits 0', () => { const r = path.join(work, 'empty'); fs.mkdirSync(r); assert.match(run(r), /No marketplace plugins installed under/); });
+
+// Auto-update lines follow code.claude.com/docs/en/plugins/loading.md, "Which marketplaces and plugins auto-update".
+const au = (out, m) => (out.match(new RegExp(`^  ${m}  (.+)$`, 'm')) || [])[1] || '';
+const twoMarkets = (name, extra = {}) => {
+  const r = makeRoot(name, { version: 2, plugins: { 'same@official': [{}], 'same@claude-plugins-official': [{}] } });
+  const mk = path.join(r, 'marketplaces', 'claude-plugins-official', '.claude-plugin');
+  fs.mkdirSync(mk, { recursive: true });
+  fs.writeFileSync(path.join(mk, 'marketplace.json'), JSON.stringify({ name: 'claude-plugins-official', plugins: extra.plugins || plugins }));
+  if (extra.known) fs.writeFileSync(path.join(r, 'known_marketplaces.json'), JSON.stringify(extra.known));
+  if (extra.settings) fs.writeFileSync(path.join(path.dirname(r), 'settings.json'), JSON.stringify(extra.settings));
+  return r;
+};
+for (const d of ['d1', 'd2', 'd3', 'd4', 'd5']) fs.mkdirSync(path.join(work, d));
+const def = run(twoMarkets('d1/r'));
+t('by default an official marketplace auto-updates and any other does not, with the command to update by hand', () => {
+  assert.match(au(def, 'claude-plugins-official'), /^on \(default for Anthropic's official marketplaces\)/);
+  assert.match(au(def, 'official'), /^off \(default for this marketplace\); by hand: claude plugin update <name>@official$/); });
+const toggled = run(twoMarkets('d2/r', { known: { official: { autoUpdate: true, lastUpdated: '2026-10-12T08:00:00.000Z' }, 'claude-plugins-official': { autoUpdate: false } } }));
+t('the /plugin toggle (known_marketplaces.json autoUpdate) wins over the default, and the last fetch date shows', () => {
+  assert.match(au(toggled, 'official'), /^on \(set in \/plugin, Marketplaces\); listing last fetched 2026-10-12$/);
+  assert.match(au(toggled, 'claude-plugins-official'), /^off \(set in \/plugin, Marketplaces\)/); });
+const declared = run(twoMarkets('d3/r', { known: { official: { autoUpdate: true } }, settings: { extraKnownMarketplaces: { official: { autoUpdate: false } } } }));
+t('autoUpdate on an extraKnownMarketplaces entry in settings wins over the /plugin toggle', () =>
+  assert.match(au(declared, 'official'), /^off \(set in .*settings\.json\)/));
+t('DISABLE_AUTOUPDATER turns every marketplace off; FORCE_AUTOUPDATE_PLUGINS=1 turns them back on', () => {
+  assert.match(run(twoMarkets('d4/r'), { DISABLE_AUTOUPDATER: '1' }), /off for every marketplace: DISABLE_AUTOUPDATER is set/);
+  const forced = run(twoMarkets('d4/r'), { DISABLE_AUTOUPDATER: '1', FORCE_AUTOUPDATE_PLUGINS: '1' });
+  assert.doesNotMatch(forced, /off for every marketplace/); assert.match(au(forced, 'claude-plugins-official'), /^on /); });
+t('an update-off variable set in the settings env block counts too, and "0" does not', () => {
+  fs.writeFileSync(path.join(work, 'd5', 'settings.json'), JSON.stringify({ env: { DISABLE_UPDATES: '1' } }));
+  assert.match(run(twoMarkets('d5/r')), /DISABLE_UPDATES is set/);
+  fs.writeFileSync(path.join(work, 'd5', 'settings.json'), JSON.stringify({ env: { DISABLE_UPDATES: '0' } }));
+  assert.doesNotMatch(run(twoMarkets('d5/r')), /off for every marketplace/); });
+const helper = run(twoMarkets('d2/h', { plugins: plugins.map(p => p.name === 'same' ? { ...p, headersHelper: './h.sh' } : p) }));
+t('a plugin whose entry declares a headersHelper is named as skipped by auto-update', () => {
+  assert.match(helper, /same@claude-plugins-official declares a headersHelper: auto-update skips it/);
+  assert.doesNotMatch(helper, /same@official declares/); });
 
 fs.rmSync(work, { recursive: true, force: true });
 console.log(`${n} tests passed`);
