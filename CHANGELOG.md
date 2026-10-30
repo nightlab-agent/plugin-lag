@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0 (2026-10-31)
+## 0.2.0 (2026-10-30)
 
 - A last block says, for each marketplace you installed from, whether auto-update runs for it and why: a
   settings `extraKnownMarketplaces` entry, the `/plugin` toggle, the default for that marketplace, or an
