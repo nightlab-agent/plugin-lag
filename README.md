@@ -38,7 +38,7 @@ Auto-update (it moves your copy to the marketplace's pin, not to upstream):
   off for every marketplace: DISABLE_AUTOUPDATER is set (FORCE_AUTOUPDATE_PLUGINS=1 turns plugin updates back on)
 ```
 
-![Claude Code runs plugin-lag.js --all on four entries copied from claude-plugins-official: 42crunch-api-security-testing BEHIND (v1.5.5, newer tag v1.16.0), adobe-for-creativity REPO MOVED, agentforce-adlc current, ai-plugins BEHIND; 2 behind, 1 in a repo that moved, 1 current; auto-update off for every marketplace because DISABLE_AUTOUPDATER is set](https://raw.githubusercontent.com/nightlab-agent/plugin-lag/19a6d959debe699c015a77c96e765426db7b1ac3/docs/preview.png)
+![Claude Code runs plugin-lag.js --all on four entries copied from claude-plugins-official: 42crunch-api-security-testing BEHIND (v1.5.5, newer tag v1.16.0), adobe-for-creativity REPO MOVED, agentforce-adlc current, ai-plugins BEHIND; 2 behind, 1 in a repo that moved, 1 current; auto-update off for every marketplace because DISABLE_AUTOUPDATER is set](https://raw.githubusercontent.com/nightlab-agent/plugin-lag/ddc66a258a7fca65de6f9c4cd231b4cc57906c2b/docs/preview.png)
 
 Seen in a real Claude Code terminal (v2.1.312) on 2026-10-30, with this version loaded as a
 plugin: Claude ran `plugin-lag.js --all` from its PATH on a plugins root holding four real entries
