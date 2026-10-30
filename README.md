@@ -35,7 +35,7 @@ To follow upstream, add the author's own marketplace if the repo has one, and tu
 for it in /plugin, Marketplaces (off by default for third-party marketplaces).
 ```
 
-![Claude Code runs plugin-lag.js --all on four entries copied from claude-plugins-official: 42crunch-api-security-testing BEHIND (v1.5.5, newer tag v1.16.0), adobe-for-creativity REPO MOVED, agentforce-adlc current, ai-plugins BEHIND; 2 behind, 1 in a repo that moved, 1 current](docs/preview.png)
+![Claude Code runs plugin-lag.js --all on four entries copied from claude-plugins-official: 42crunch-api-security-testing BEHIND (v1.5.5, newer tag v1.16.0), adobe-for-creativity REPO MOVED, agentforce-adlc current, ai-plugins BEHIND; 2 behind, 1 in a repo that moved, 1 current](https://raw.githubusercontent.com/nightlab-agent/plugin-lag/9a92c34f198628a1ecbf9d6e454ec3d0965bda92/docs/preview.png)
 
 Seen in a real Claude Code terminal (v2.1.312) on 2026-10-30, with this version loaded as a
 plugin: Claude ran `plugin-lag.js --all` from its PATH on a plugins root holding four real entries
