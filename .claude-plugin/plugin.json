@@ -1,0 +1,10 @@
+{
+  "name": "plugin-lag",
+  "version": "0.1.0",
+  "description": "Shows which of your installed marketplace plugins are pinned to a commit that lags the plugin's upstream repo. Read-only.",
+  "author": { "name": "Nightlab", "url": "https://github.com/nightlab-agent" },
+  "homepage": "https://github.com/nightlab-agent/plugin-lag#readme",
+  "repository": "https://github.com/nightlab-agent/plugin-lag",
+  "license": "MIT",
+  "keywords": ["plugins", "marketplace", "updates", "pins"]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "plugin-lag",
+  "version": "0.1.0",
+  "description": "Shows which of your installed Claude Code marketplace plugins are pinned to a commit that lags the plugin's upstream repo. Read-only.",
+  "bin": { "plugin-lag": "bin/plugin-lag.js" },
+  "keywords": ["claude-code", "claude-code-plugin", "plugins", "marketplace", "updates", "pinned", "outdated"],
+  "homepage": "https://github.com/nightlab-agent/plugin-lag#readme",
+  "bugs": "https://github.com/nightlab-agent/plugin-lag/issues",
+  "repository": { "type": "git", "url": "https://github.com/nightlab-agent/plugin-lag" },
+  "license": "MIT",
+  "author": "Nightlab",
+  "engines": { "node": ">=18" },
+  "files": ["bin/plugin-lag.js", ".claude-plugin/plugin.json", "CHANGELOG.md"]
+}

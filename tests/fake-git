@@ -1,0 +1,7 @@
+#!/bin/sh
+# Stands in for git in the tests: `git ls-remote [--] <url>` prints <FAKE_REFS>/<url with / and : as _>.
+[ "$1" = ls-remote ] && [ "$2" = "--" ] || { echo "fake git: expected ls-remote -- <url>" >&2; exit 2; }
+for a; do u=$a; done
+f="$FAKE_REFS/$(printf '%s' "$u" | tr '/:' '__')"
+[ -f "$f" ] || { echo "fatal: repository not found" >&2; exit 128; }
+cat "$f"
