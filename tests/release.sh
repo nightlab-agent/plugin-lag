@@ -5,6 +5,7 @@ cd "$(dirname "$0")/.."
 claude plugin validate .
 node tests/test.js
 node tests/review.test.js
+node tests/review-020.test.js
 v=$(node -p "require('./package.json').version")
 [ "$(node -p "require('./.claude-plugin/plugin.json').version")" = "$v" ] || { echo "plugin.json version differs from $v"; exit 1; }
 grep -q "^## $v " CHANGELOG.md || { echo "CHANGELOG.md has no $v section"; exit 1; }

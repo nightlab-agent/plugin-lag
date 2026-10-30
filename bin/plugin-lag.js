@@ -11,12 +11,13 @@ if (args.includes('-h') || args.includes('--help')) {
   console.log(`Usage: npx plugin-lag [--all] [--root <dir>]
 
   --all         check every commit-pinned entry in your marketplaces, installed or not
-  --root <dir>  the plugins root (default: CLAUDE_CODE_PLUGIN_CACHE_DIR, else ~/.claude/plugins);
+  --root <dir>  the plugins root (default: CLAUDE_CODE_PLUGIN_CACHE_DIR, else plugins/ in CLAUDE_CONFIG_DIR or ~/.claude);
                 with --root, user settings are read from the folder above it`);
   process.exit(0);
 }
 const flag = name => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : undefined; };
-const root = flag('--root') || process.env.CLAUDE_CODE_PLUGIN_CACHE_DIR || path.join(os.homedir(), '.claude', 'plugins');
+const home = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');   // env-vars.md: settings and plugins live under it
+const root = flag('--root') || process.env.CLAUDE_CODE_PLUGIN_CACHE_DIR || path.join(home, 'plugins');
 const all = args.includes('--all');
 const readJson = p => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return null; } };
 const dirs = p => { try { return fs.readdirSync(p, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name); } catch { return []; } };
@@ -120,12 +121,16 @@ for (const t of targets) {
 const OFFICIAL = ['claude-plugins-official', 'claude-code-marketplace', 'claude-code-plugins', 'anthropic-marketplace', 'anthropic-plugins',
   'agent-skills', 'anthropic-agent-skills', 'life-sciences', 'claude-for-legal', 'claude-for-financial-services',
   'financial-services-plugins', 'claude-tag-plugins'];   // plugins/security.md, less knowledge-work-plugins and first-party-plugins (off by default)
-const configDir = flag('--root') ? path.dirname(root) : (process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude'));
+const configDir = flag('--root') ? path.dirname(root) : home;
 const settingsFiles = [path.join(process.cwd(), '.claude', 'settings.local.json'), path.join(process.cwd(), '.claude', 'settings.json'), path.join(configDir, 'settings.json')];
 const settings = settingsFiles.map(f => ({ f, j: readJson(f) })).filter(x => x.j && typeof x.j === 'object');
 const claudeai = readJson(path.join(root, 'known_marketplaces_claudeai.json')) || {};
-const envOf = name => { if (process.env[name]) return process.env[name]; for (const { j } of settings) if (j.env && j.env[name]) return String(j.env[name]); };
-const isSet = name => { const v = envOf(name); return !!v && v !== '0' && v.toLowerCase() !== 'false'; };
+// A settings env block wins over the shell (env-vars.md, "Precedence"); 1/true/yes/on in any casing turn a switch on.
+const envOf = name => { for (const { j } of settings) if (j.env && j.env[name] !== undefined) return String(j.env[name]); return process.env[name]; };
+const isSet = name => ['1', 'true', 'yes', 'on'].includes(String(envOf(name) || '').trim().toLowerCase());
+// An official name counts only for a marketplace from github.com/anthropics/ (plugins/security.md).
+const fromAnthropics = m => { const s = known[m] && known[m].source; if (!s) return true; const where = String(s.repo || s.url || '');
+  return /^anthropics\//i.test(where) || /github\.com[/:]anthropics\//i.test(where); };
 const offVar = ['DISABLE_UPDATES', 'DISABLE_AUTOUPDATER', 'CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC'].find(isSet);
 function autoUpdate(m) {
   for (const { f, j } of settings) {
@@ -134,12 +139,12 @@ function autoUpdate(m) {
   }
   if (known[m] && typeof known[m].autoUpdate === 'boolean') return [known[m].autoUpdate, 'set in /plugin, Marketplaces'];
   if (claudeai[m]) return [true, 'default for a marketplace added from claude.ai'];
-  if (OFFICIAL.includes(m)) return [true, "default for Anthropic's official marketplaces"];
+  if (OFFICIAL.includes(m) && fromAnthropics(m)) return [true, "default for Anthropic's official marketplaces"];
   return [false, 'default for this marketplace'];
 }
 const compared = count.behind + count.moved + count.current;
 console.log(`\n${count.behind} behind, ${count.moved} in a repo that moved, ${count.current} current (${compared} compared of ${targets.length}).`);
-if (count.behind || count.moved) console.log(`The marketplace reviewed the commit it pins; newer upstream commits were not reviewed by it.
+if (count.behind || count.moved) console.log(`The marketplace chose the commit it pins; newer upstream commits were not chosen by it.
 To follow upstream, add the author's own marketplace if the repo has one, and turn on auto-update
 for it in /plugin, Marketplaces.`);
 console.log("\nAuto-update (it moves your copy to the marketplace's pin, not to upstream):");
