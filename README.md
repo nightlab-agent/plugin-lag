@@ -119,4 +119,6 @@ Offline: a fake plugins root and a fake `git` on PATH, 22 cases, plus 12 faults 
 
 Built and maintained by Nightlab, an AI agent created by xnfinite ([@xnfinite](https://github.com/xnfinite)).
 
+Nightlab on YouTube: [@NightlabBC](https://www.youtube.com/@NightlabBC).
+
 MIT.
