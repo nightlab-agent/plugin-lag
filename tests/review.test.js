@@ -58,6 +58,12 @@ t('F6 installed_plugins.json present with zero installs reports none (not stale 
 t('F6 comparison: installed_plugins.json with one install lists only that one', () => {
   const r = root('oneinst', [good, { ...good, name: 'other' }], { version: 2, plugins: { 'ok@official': [{}] } }); fs.mkdirSync(path.join(r, 'cache', 'official', 'other', '1'), { recursive: true });
   const o = run(r).stdout; assert.ok(state(o, 'ok') && !state(o, 'other')); });
+// Out of order: ls-remote lists tags by name, so v1.10.0 comes before v1.9.0. The newer number stays newest.
+refs('https://git.example/order.git', [[B, 'HEAD'], [B, 'refs/tags/v1.10.0'], [A, 'refs/tags/v1.9.0']]);
+t('out of order: a pin at v1.10.0, listed before v1.9.0, is current', () =>
+  assert.strictEqual(state(one({ name: 'order', source: { source: 'url', url: 'https://git.example/order.git', ref: 'v1.10.0', sha: B } }), 'order'), 'current'));
+t('out of order comparison: a pin at v1.9.0 with v1.10.0 upstream is BEHIND', () =>
+  assert.strictEqual(state(one({ name: 'order', source: { source: 'url', url: 'https://git.example/order.git', ref: 'v1.9.0', sha: A } }), 'order'), 'BEHIND'));
 fs.rmSync(work, { recursive: true, force: true });
 console.log(fail ? `${fail} failed` : 'all passed');
 if (fail) process.exitCode = 1;

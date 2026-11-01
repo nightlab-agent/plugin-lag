@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Tests: tags listed by name (v1.10.0 before v1.9.0) are still compared by number. No change to
+  the code.
+
 ## 0.2.0 (2026-10-30)
 
 - A last block says, for each marketplace you installed from, whether auto-update runs for it and why: a
