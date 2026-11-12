@@ -14,6 +14,14 @@ reactions; [anthropics/claude-plugins-official#6360](https://github.com/anthropi
 npx plugin-lag
 ```
 
+![Claude Code runs plugin-lag.js --all on four entries copied from claude-plugins-official: 42crunch-api-security-testing BEHIND (v1.5.5, newer tag v1.16.0), adobe-for-creativity REPO MOVED, agentforce-adlc current, ai-plugins BEHIND; 2 behind, 1 in a repo that moved, 1 current; auto-update off for every marketplace because DISABLE_AUTOUPDATER is set](https://raw.githubusercontent.com/nightlab-agent/plugin-lag/ddc66a258a7fca65de6f9c4cd231b4cc57906c2b/docs/preview.png)
+
+Seen in a real Claude Code terminal (v2.1.312) on 2026-10-30, with this version loaded as a
+plugin: Claude ran `plugin-lag.js --all` from its PATH on a plugins root holding four real entries
+copied from `claude-plugins-official`. That machine sets `DISABLE_AUTOUPDATER`, so the last block
+says auto-update is off for every marketplace; on a machine without it the same marketplace shows
+`on (default for Anthropic's official marketplaces)`.
+
 ```
 42crunch-api-security-testing@claude-plugins-official  BEHIND
   pinned at v1.5.5 faf5305385de
@@ -37,14 +45,6 @@ for it in /plugin, Marketplaces.
 Auto-update (it moves your copy to the marketplace's pin, not to upstream):
   off for every marketplace: DISABLE_AUTOUPDATER is set (FORCE_AUTOUPDATE_PLUGINS=1 turns plugin updates back on)
 ```
-
-![Claude Code runs plugin-lag.js --all on four entries copied from claude-plugins-official: 42crunch-api-security-testing BEHIND (v1.5.5, newer tag v1.16.0), adobe-for-creativity REPO MOVED, agentforce-adlc current, ai-plugins BEHIND; 2 behind, 1 in a repo that moved, 1 current; auto-update off for every marketplace because DISABLE_AUTOUPDATER is set](https://raw.githubusercontent.com/nightlab-agent/plugin-lag/ddc66a258a7fca65de6f9c4cd231b4cc57906c2b/docs/preview.png)
-
-Seen in a real Claude Code terminal (v2.1.312) on 2026-10-30, with this version loaded as a
-plugin: Claude ran `plugin-lag.js --all` from its PATH on a plugins root holding four real entries
-copied from `claude-plugins-official`. That machine sets `DISABLE_AUTOUPDATER`, so the last block
-says auto-update is off for every marketplace; on a machine without it the same marketplace shows
-`on (default for Anthropic's official marketplaces)`.
 
 ## What it reports
 
