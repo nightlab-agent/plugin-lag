@@ -118,5 +118,19 @@ t('a plugin whose entry declares a headersHelper is named as skipped by auto-upd
   assert.match(helper, /same@claude-plugins-official declares a headersHelper: auto-update skips it/);
   assert.doesNotMatch(helper, /same@official declares/); });
 
+const refuse = (...argv) => { const r = require('child_process').spawnSync(process.execPath, [path.join(__dirname, '..', 'bin', 'plugin-lag.js'), ...argv],
+  { encoding: 'utf8', cwd: work, env: { ...quiet, PATH: `${bin}${path.delimiter}${process.env.PATH}`, FAKE_REFS: refsDir } });
+  return { status: r.status, out: r.stdout, err: r.stderr }; };
+t('a --root that is not a folder is refused, not reported as "no plugins"', () => {
+  const r = refuse('--root', path.join(work, 'no-such-root'));
+  assert.strictEqual(r.status, 2); assert.strictEqual(r.out, ''); assert.match(r.err, /--root .*no-such-root is not a folder/); });
+t('--root with no folder after it is refused', () => {
+  for (const argv of [['--root'], ['--root', '--all']]) {
+    const r = refuse(...argv); assert.strictEqual(r.status, 2); assert.match(r.err, /--root needs a folder/); } });
+t('an unknown option or a stray argument is refused and named', () => {
+  for (const [arg, rx] of [['--al', /unknown option --al/], ['extra', /unexpected argument extra/]]) {
+    const r = refuse('--root', makeRoot('u-' + arg.replace(/-/g, ''), null), arg);
+    assert.strictEqual(r.status, 2); assert.strictEqual(r.out, ''); assert.match(r.err, rx); assert.match(r.err, /--help/); } });
+
 fs.rmSync(work, { recursive: true, force: true });
 console.log(`${n} tests passed`);

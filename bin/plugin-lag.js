@@ -15,9 +15,21 @@ if (args.includes('-h') || args.includes('--help')) {
                 with --root, user settings are read from the folder above it`);
   process.exit(0);
 }
-const flag = name => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : undefined; };
+const refuse = msg => { console.error(`plugin-lag: ${msg} (see --help)`); process.exit(2); };
+let rootArg;
+for (let i = 0; i < args.length; i++) {
+  const a = args[i];
+  if (a === '--all') continue;
+  if (a === '--root') {
+    rootArg = args[++i];
+    if (rootArg === undefined || rootArg.startsWith('-')) refuse('--root needs a folder after it');
+  } else refuse(a.startsWith('-') ? `unknown option ${a}` : `unexpected argument ${a}`);
+}
+// An explicit --root that is missing would otherwise read as "no plugins installed".
+if (rootArg !== undefined && !(fs.statSync(rootArg, { throwIfNoEntry: false }) || { isDirectory: () => false }).isDirectory())
+  refuse(`--root ${rootArg} is not a folder`);
 const home = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');   // env-vars.md: settings and plugins live under it
-const root = flag('--root') || process.env.CLAUDE_CODE_PLUGIN_CACHE_DIR || path.join(home, 'plugins');
+const root = rootArg || process.env.CLAUDE_CODE_PLUGIN_CACHE_DIR || path.join(home, 'plugins');
 const all = args.includes('--all');
 const readJson = p => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return null; } };
 const dirs = p => { try { return fs.readdirSync(p, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name); } catch { return []; } };
@@ -121,7 +133,7 @@ for (const t of targets) {
 const OFFICIAL = ['claude-plugins-official', 'claude-code-marketplace', 'claude-code-plugins', 'anthropic-marketplace', 'anthropic-plugins',
   'agent-skills', 'anthropic-agent-skills', 'life-sciences', 'claude-for-legal', 'claude-for-financial-services',
   'financial-services-plugins', 'claude-tag-plugins'];   // plugins/security.md, less knowledge-work-plugins and first-party-plugins (off by default)
-const configDir = flag('--root') ? path.dirname(root) : home;
+const configDir = rootArg !== undefined ? path.dirname(root) : home;
 const settingsFiles = [path.join(process.cwd(), '.claude', 'settings.local.json'), path.join(process.cwd(), '.claude', 'settings.json'), path.join(configDir, 'settings.json')];
 const settings = settingsFiles.map(f => ({ f, j: readJson(f) })).filter(x => x.j && typeof x.j === 'object');
 const claudeai = readJson(path.join(root, 'known_marketplaces_claudeai.json')) || {};
