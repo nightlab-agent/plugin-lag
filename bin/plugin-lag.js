@@ -20,14 +20,16 @@ let rootArg;
 for (let i = 0; i < args.length; i++) {
   const a = args[i];
   if (a === '--all') continue;
-  if (a === '--root') {
+  if (a.startsWith('--root=')) rootArg = a.slice(7) || refuse('--root needs a folder after it');
+  else if (a === '--root') {
     rootArg = args[++i];
     if (rootArg === undefined || rootArg.startsWith('-')) refuse('--root needs a folder after it');
   } else refuse(a.startsWith('-') ? `unknown option ${a}` : `unexpected argument ${a}`);
 }
 // An explicit --root that is missing would otherwise read as "no plugins installed".
-if (rootArg !== undefined && !(fs.statSync(rootArg, { throwIfNoEntry: false }) || { isDirectory: () => false }).isDirectory())
-  refuse(`--root ${rootArg} is not a folder`);
+// statSync's throwIfNoEntry covers a missing path only; EACCES and ELOOP still throw.
+const isDir = p => { try { return fs.statSync(p).isDirectory(); } catch { return false; } };
+if (rootArg !== undefined && !isDir(rootArg)) refuse(`--root ${rootArg} is not a folder`);
 const home = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');   // env-vars.md: settings and plugins live under it
 const root = rootArg || process.env.CLAUDE_CODE_PLUGIN_CACHE_DIR || path.join(home, 'plugins');
 const all = args.includes('--all');

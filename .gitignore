@@ -2,3 +2,5 @@
 *.log
 node_modules/
 tests/.work-*/
+tests/.rwork-*/
+tests/.r020-*/

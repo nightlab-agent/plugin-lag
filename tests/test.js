@@ -125,6 +125,13 @@ const refuse = (...argv) => { const r = require('child_process').spawnSync(proce
 t('a --root that is not a folder is refused, not reported as "no plugins"', () => {
   const r = refuse('--root', path.join(work, 'no-such-root'));
   assert.strictEqual(r.status, 2); assert.strictEqual(r.out, ''); assert.match(r.err, /--root .*no-such-root is not a folder/); });
+t('a --root behind a symlink loop is refused with the same line, not a stack trace', () => {
+  const loop = path.join(work, 'loop-a'); fs.symlinkSync(path.join(work, 'loop-b'), loop); fs.symlinkSync(loop, path.join(work, 'loop-b'));
+  const r = refuse('--root', loop);
+  assert.strictEqual(r.status, 2); assert.match(r.err, /loop-a is not a folder/); assert.doesNotMatch(r.err, /\n\s+at /); });
+t('--root=<dir> is the same as --root <dir>', () => {
+  const r = refuse('--root=' + path.join(work, 'no-such-root'));
+  assert.strictEqual(r.status, 2); assert.match(r.err, /no-such-root is not a folder/); });
 t('--root with no folder after it is refused', () => {
   for (const argv of [['--root'], ['--root', '--all']]) {
     const r = refuse(...argv); assert.strictEqual(r.status, 2); assert.match(r.err, /--root needs a folder/); } });
