@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.1 (2026-11-13)
 
 - A `--root` that is not a folder, a `--root` with nothing after it, and an unknown option or
   stray argument now stop with exit code 2 and a line on stderr naming the argument. Before, all
