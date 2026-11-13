@@ -5,6 +5,7 @@ const fs = require('fs'), path = require('path'), assert = require('assert');
 const { spawnSync } = require('child_process');
 const BIN = path.resolve(process.argv[2] || path.join(__dirname, '..', 'bin', 'plugin-lag.js'));
 const work = fs.mkdtempSync(path.join(__dirname, '.r020-'));
+process.on('exit', () => fs.rmSync(work, { recursive: true, force: true }));   // also when a test throws
 const A = 'a'.repeat(40);
 const refsDir = path.join(work, 'refs'), bin = path.join(work, 'bin'), cwd = path.join(work, 'cwd');
 for (const d of [refsDir, bin, cwd]) fs.mkdirSync(d);
@@ -61,6 +62,5 @@ t('R4 a marketplace named claude-code-plugins registered from a non-anthropics r
 t('R4 comparison: claude-code-plugins from anthropics/claude-code is on by default', () =>
   assert.match(run(['--root', root('claude-code-plugins', { known: knownFrom('anthropics/claude-code') }).r]), /claude-code-plugins  on \(default for Anthropic's official/));
 
-fs.rmSync(work, { recursive: true, force: true });
 console.log(fail ? `${fail} failed` : 'all passed');
 if (fail) process.exitCode = 1;

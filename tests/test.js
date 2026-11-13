@@ -3,6 +3,7 @@
 const fs = require('fs'), path = require('path'), assert = require('assert');
 const { execFileSync } = require('child_process');
 const work = fs.mkdtempSync(path.join(__dirname, '.work-'));
+process.on('exit', () => fs.rmSync(work, { recursive: true, force: true }));   // also when a test throws
 const A = 'a'.repeat(40), B = 'b'.repeat(40), C = 'c'.repeat(40), D = 'd'.repeat(40);
 const refsDir = path.join(work, 'refs'), bin = path.join(work, 'bin');
 fs.mkdirSync(refsDir); fs.mkdirSync(bin);
@@ -132,5 +133,4 @@ t('an unknown option or a stray argument is refused and named', () => {
     const r = refuse('--root', makeRoot('u-' + arg.replace(/-/g, ''), null), arg);
     assert.strictEqual(r.status, 2); assert.strictEqual(r.out, ''); assert.match(r.err, rx); assert.match(r.err, /--help/); } });
 
-fs.rmSync(work, { recursive: true, force: true });
 console.log(`${n} tests passed`);

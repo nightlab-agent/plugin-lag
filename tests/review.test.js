@@ -3,6 +3,7 @@
 const fs = require('fs'), path = require('path'), assert = require('assert');
 const { execFileSync, spawnSync } = require('child_process');
 const work = fs.mkdtempSync(path.join(__dirname, '.rwork-'));
+process.on('exit', () => fs.rmSync(work, { recursive: true, force: true }));   // also when a test throws
 const A = 'a'.repeat(40), B = 'b'.repeat(40), C = 'c'.repeat(40), D = 'd'.repeat(40), E = 'e'.repeat(40);
 const refsDir = path.join(work, 'refs'), bin = path.join(work, 'bin');
 fs.mkdirSync(refsDir); fs.mkdirSync(bin);
@@ -64,6 +65,5 @@ t('out of order: a pin at v1.10.0, listed before v1.9.0, is current', () =>
   assert.strictEqual(state(one({ name: 'order', source: { source: 'url', url: 'https://git.example/order.git', ref: 'v1.10.0', sha: B } }), 'order'), 'current'));
 t('out of order comparison: a pin at v1.9.0 with v1.10.0 upstream is BEHIND', () =>
   assert.strictEqual(state(one({ name: 'order', source: { source: 'url', url: 'https://git.example/order.git', ref: 'v1.9.0', sha: A } }), 'order'), 'BEHIND'));
-fs.rmSync(work, { recursive: true, force: true });
 console.log(fail ? `${fail} failed` : 'all passed');
 if (fail) process.exitCode = 1;
