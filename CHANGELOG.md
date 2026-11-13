@@ -6,7 +6,8 @@
   stray argument now stop with exit code 2 and a line on stderr naming the argument. Before, all
   three exited 0, and a mistyped `--root` printed "No marketplace plugins installed". A `--root` that
   cannot be read (no permission, a symlink loop) gets the same line instead of a stack trace.
-  `--root=<dir>` now works like `--root <dir>`.
+  `--root=<dir>` now works like `--root <dir>`. A folder named with a leading dash is still accepted, and
+  with two `--root` the first wins, as before. `-h` or `--help` anywhere still prints the help.
 - Tests: the temporary folder is removed on exit, also when a test fails.
 - Tests: tags listed by name (v1.10.0 before v1.9.0) are still compared by number. No change to
   the code.

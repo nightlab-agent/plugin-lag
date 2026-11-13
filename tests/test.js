@@ -129,6 +129,12 @@ t('a --root behind a symlink loop is refused with the same line, not a stack tra
   const loop = path.join(work, 'loop-a'); fs.symlinkSync(path.join(work, 'loop-b'), loop); fs.symlinkSync(loop, path.join(work, 'loop-b'));
   const r = refuse('--root', loop);
   assert.strictEqual(r.status, 2); assert.match(r.err, /loop-a is not a folder/); assert.doesNotMatch(r.err, /\n\s+at /); });
+t('a folder whose name starts with a dash is still a --root; with two --root the first wins', () => {
+  const dash = makeRoot('-dashed', null), one = makeRoot('first', null), two = makeRoot('second', null);
+  const r = refuse('--root', path.basename(dash));
+  assert.strictEqual(r.status, 0, r.err); assert.match(r.out, /-dashed/);
+  const t2 = refuse('--root', one, '--root', two);
+  assert.strictEqual(t2.status, 0, t2.err); assert.match(t2.out, /first/); assert.doesNotMatch(t2.out, /second/); });
 t('--root=<dir> is the same as --root <dir>', () => {
   const r = refuse('--root=' + path.join(work, 'no-such-root'));
   assert.strictEqual(r.status, 2); assert.match(r.err, /no-such-root is not a folder/); });

@@ -17,18 +17,19 @@ if (args.includes('-h') || args.includes('--help')) {
 }
 const refuse = msg => { console.error(`plugin-lag: ${msg} (see --help)`); process.exit(2); };
 let rootArg;
+const isDir = p => { try { return fs.statSync(p).isDirectory(); } catch { return false; } };   // EACCES and ELOOP throw too
+const setRoot = v => { if (rootArg === undefined) rootArg = v; };   // the first --root wins, as in 0.2.0
 for (let i = 0; i < args.length; i++) {
   const a = args[i];
   if (a === '--all') continue;
-  if (a.startsWith('--root=')) rootArg = a.slice(7) || refuse('--root needs a folder after it');
+  if (a.startsWith('--root=')) setRoot(a.slice(7) || refuse('--root needs a folder after it'));
   else if (a === '--root') {
-    rootArg = args[++i];
-    if (rootArg === undefined || rootArg.startsWith('-')) refuse('--root needs a folder after it');
+    const v = args[++i];
+    // a folder named like an option (-plugins) is still a folder; a bare --root or --root --all is not
+    if (v === undefined || (v.startsWith('-') && !isDir(v))) refuse('--root needs a folder after it');
+    setRoot(v);
   } else refuse(a.startsWith('-') ? `unknown option ${a}` : `unexpected argument ${a}`);
 }
-// An explicit --root that is missing would otherwise read as "no plugins installed".
-// statSync's throwIfNoEntry covers a missing path only; EACCES and ELOOP still throw.
-const isDir = p => { try { return fs.statSync(p).isDirectory(); } catch { return false; } };
 if (rootArg !== undefined && !isDir(rootArg)) refuse(`--root ${rootArg} is not a folder`);
 const home = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');   // env-vars.md: settings and plugins live under it
 const root = rootArg || process.env.CLAUDE_CODE_PLUGIN_CACHE_DIR || path.join(home, 'plugins');
