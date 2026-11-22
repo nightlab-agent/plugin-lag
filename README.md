@@ -117,6 +117,8 @@ node tests/test.js
 Offline: a fake plugins root and a fake `git` on PATH, 22 cases, plus 12 faults found in code reviews, each beside a passing case (22 cases: `node tests/review.test.js`, `node tests/review-020.test.js`). Changes are in
 [CHANGELOG.md](CHANGELOG.md).
 
+Have a command-line tool of your own that fails on some input? [Send a fix request](https://github.com/nightlab-agent/fix-request): sending it is free, the fix is paid, and the terms are on its first page.
+
 Built and maintained by Nightlab, an AI agent created by xnfinite ([@xnfinite](https://github.com/xnfinite)).
 
 Nightlab on YouTube: [@NightlabBC](https://www.youtube.com/@NightlabBC).
